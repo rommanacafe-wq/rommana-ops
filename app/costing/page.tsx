@@ -12,6 +12,7 @@ type Profile = {
 type InventoryItem = {
   id: string
   name: string
+  category: string
   unit: string
   cost: number | null
   purchase_quantity: number | null
@@ -23,6 +24,7 @@ type InventoryItem = {
 type EditableInventoryItem = {
   id: string
   name: string
+  category: string
   unit: string
   cost: string
   purchase_quantity: string
@@ -49,7 +51,14 @@ const unitOptions = [
   'batch',
   'serving',
 ]
-
+const categories = [
+  'raw ingredient',
+  'syrups',
+  'prep_batch',
+  'packaging supply',
+  'retail service item',
+  'cleaning supply',
+]
 export default function CostingPage() {
   const supabase = createClient()
 
@@ -61,6 +70,8 @@ export default function CostingPage() {
 
   const [authChecked, setAuthChecked] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+const [categoryFilter, setCategoryFilter] = useState('all')
 
   async function checkAdmin() {
     const {
@@ -98,8 +109,8 @@ export default function CostingPage() {
     const { data, error } = await supabase
       .from('inventory_items')
       .select(
-        'id, name, unit, cost, purchase_quantity, purchase_unit, package_size, package_size_unit'
-      )
+  'id, name, category, unit, cost, purchase_quantity, purchase_unit, package_size, package_size_unit'
+)
       .order('name', { ascending: true })
 
     if (error) {
@@ -113,6 +124,7 @@ export default function CostingPage() {
         id: item.id,
         name: item.name,
         unit: item.unit || '',
+        category: item.category || '',
         cost: item.cost === null ? '' : String(item.cost),
         purchase_quantity:
           item.purchase_quantity === null ? '' : String(item.purchase_quantity),
@@ -280,7 +292,22 @@ export default function CostingPage() {
     setSavingAll(false)
   }
 
-  const rows = useMemo(() => items, [items])
+  const rows = useMemo(() => {
+  let filtered = [...items]
+
+  if (searchTerm.trim()) {
+    const search = searchTerm.trim().toLowerCase()
+    filtered = filtered.filter((item) =>
+      item.name.toLowerCase().includes(search)
+    )
+  }
+
+  if (categoryFilter !== 'all') {
+    filtered = filtered.filter((item) => item.category === categoryFilter)
+  }
+
+  return filtered.sort((a, b) => a.name.localeCompare(b.name))
+}, [items, searchTerm, categoryFilter])
 
   if (!authChecked) {
     return (
@@ -333,7 +360,39 @@ export default function CostingPage() {
             {pageMessage}
           </div>
         ) : null}
+<div className="mb-4 flex flex-wrap gap-3">
+  <input
+    type="text"
+    placeholder="Search item name..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="min-w-[240px] rounded-2xl border border-[#d9cbbd] bg-white px-4 py-2"
+  />
 
+  <select
+    value={categoryFilter}
+    onChange={(e) => setCategoryFilter(e.target.value)}
+    className="rounded-2xl border border-[#d9cbbd] bg-white px-4 py-2"
+  >
+    <option value="all">Category: all</option>
+    {categories.map((cat) => (
+      <option key={cat} value={cat}>
+        Category: {cat}
+      </option>
+    ))}
+  </select>
+
+  <button
+    type="button"
+    onClick={() => {
+      setSearchTerm('')
+      setCategoryFilter('all')
+    }}
+    className="rounded-2xl border border-[#d9cbbd] bg-white px-4 py-2 text-[#2a1a1a]"
+  >
+    Clear Filters
+  </button>
+</div>
         <div className="overflow-x-auto rounded-3xl border border-[#e7ddd1] bg-white shadow-sm">
           <table className="w-full border-collapse">
             <thead>
