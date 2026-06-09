@@ -28,14 +28,6 @@ export default async function DashboardPage() {
     .from('inventory_items')
     .select('*', { count: 'exact', head: true })
 
-  const { count: recipeCount } = await supabase
-    .from('recipes')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: draftRecipeCount } = await supabase
-    .from('recipes')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'draft')
 
   const now = new Date().toISOString()
 
@@ -123,20 +115,6 @@ export default async function DashboardPage() {
             </p>
           </Link>
 
-          <Link href="/recipes" className={cardClass}>
-            <p className="text-sm uppercase tracking-[0.2em] text-[#620b0b]">
-              Recipes
-            </p>
-            <h3 className="mt-3 text-xl font-semibold text-[#2a1a1a]">
-              Recipes
-            </h3>
-            <p className="mt-2 text-3xl font-semibold text-[#620b0b]">
-              {recipeCount ?? 0}
-            </p>
-            <p className="mt-1 text-sm text-[#6b5a52]">
-              {draftRecipeCount ?? 0} drafts in progress.
-            </p>
-          </Link>
 
           <Link href="/catering-orders" className={cardClass}>
             <p className="text-sm uppercase tracking-[0.2em] text-[#620b0b]">
