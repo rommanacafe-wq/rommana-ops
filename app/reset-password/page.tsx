@@ -1,27 +1,22 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function ResetPasswordPage() {
   const supabase = createClient()
-
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/update-password`,
     })
 
     if (error) {
@@ -30,8 +25,8 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    setMessage('Password reset link sent. Please check your email.')
+    setLoading(false)
   }
 
   return (
@@ -41,13 +36,15 @@ export default function LoginPage() {
           Rommana Ops
         </p>
 
-        <h1 className="text-3xl font-semibold text-[#2a1a1a]">Log in</h1>
+        <h1 className="text-3xl font-semibold text-[#2a1a1a]">
+          Reset Password
+        </h1>
 
         <p className="mt-2 text-sm text-[#6b5a52]">
-          Access your operations dashboard.
+          Enter your email and we’ll send you a reset link.
         </p>
 
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <input
             type="email"
             value={email}
@@ -57,21 +54,12 @@ export default function LoginPage() {
             required
           />
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full rounded-2xl border border-[#d9cbbd] px-4 py-3 outline-none focus:border-[#620b0b]"
-            required
-          />
-
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-2xl bg-[#620b0b] px-4 py-3 text-white disabled:opacity-60"
           >
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </button>
         </form>
 
@@ -82,13 +70,10 @@ export default function LoginPage() {
         )}
 
         <p className="mt-6 text-sm text-[#6b5a52]">
-          Need an account?{' '}
-          <Link href="/signup" className="text-[#620b0b] underline">
-            Create one
+          Remember your password?{' '}
+          <Link href="/login" className="text-[#620b0b] underline">
+            Back to login
           </Link>
-          <Link href="/reset-password" className="text-[#620b0b] underline">
-  Forgot password?
-</Link>
         </p>
       </div>
     </main>

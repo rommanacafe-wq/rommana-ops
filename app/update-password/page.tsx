@@ -1,26 +1,35 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
-export default function LoginPage() {
+export default function UpdatePasswordPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoading(true)
     setMessage('')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+    if (password !== confirmPassword) {
+      setMessage('Passwords do not match.')
+      return
+    }
+
+    if (password.length < 6) {
+      setMessage('Password must be at least 6 characters.')
+      return
+    }
+
+    setLoading(true)
+
+    const { error } = await supabase.auth.updateUser({
       password,
     })
 
@@ -41,27 +50,29 @@ export default function LoginPage() {
           Rommana Ops
         </p>
 
-        <h1 className="text-3xl font-semibold text-[#2a1a1a]">Log in</h1>
+        <h1 className="text-3xl font-semibold text-[#2a1a1a]">
+          Create New Password
+        </h1>
 
         <p className="mt-2 text-sm text-[#6b5a52]">
-          Access your operations dashboard.
+          Enter your new password below.
         </p>
 
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="New password"
             className="w-full rounded-2xl border border-[#d9cbbd] px-4 py-3 outline-none focus:border-[#620b0b]"
             required
           />
 
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Confirm new password"
             className="w-full rounded-2xl border border-[#d9cbbd] px-4 py-3 outline-none focus:border-[#620b0b]"
             required
           />
@@ -71,7 +82,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-2xl bg-[#620b0b] px-4 py-3 text-white disabled:opacity-60"
           >
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? 'Updating...' : 'Update Password'}
           </button>
         </form>
 
@@ -80,16 +91,6 @@ export default function LoginPage() {
             {message}
           </div>
         )}
-
-        <p className="mt-6 text-sm text-[#6b5a52]">
-          Need an account?{' '}
-          <Link href="/signup" className="text-[#620b0b] underline">
-            Create one
-          </Link>
-          <Link href="/reset-password" className="text-[#620b0b] underline">
-  Forgot password?
-</Link>
-        </p>
       </div>
     </main>
   )

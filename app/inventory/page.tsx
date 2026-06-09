@@ -44,6 +44,7 @@ type SortKey =
 const categories = [
   'raw ingredient',
   'syrups',
+  'prep_batch',
   'packaging supply',
   'retail service item',
   'cleaning supply',
