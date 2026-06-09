@@ -50,10 +50,22 @@ export default async function AdminPage() {
       label: "People",
     },
     {
+      title: "Inventory",
+      description: "Manage stock levels, suppliers, and item categories.",
+      href: "/inventory",
+      label: "Inventory",
+    },
+    {
       title: "Ingredient Costing",
       description: "Set purchase costs and calculate unit costs.",
       href: "/costing",
       label: "Finance",
+    },
+    {
+      title: "Recipes",
+      description: "Create, edit, and cost recipes and prep batches.",
+      href: "/recipes",
+      label: "Recipes",
     },
     {
       title: "Profit Dashboard",
