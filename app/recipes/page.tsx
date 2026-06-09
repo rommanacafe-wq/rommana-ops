@@ -9,6 +9,7 @@ type InventoryItem = {
   name: string
   unit: string
   cost?: number | null
+  cost_per_unit?: number | null
   purchase_quantity?: number | null
   purchase_unit?: string | null
   package_size?: number | null
@@ -178,8 +179,8 @@ export default function RecipesPage() {
       const { data: inventoryData, error: inventoryError } = await supabase
         .from('inventory_items')
         .select(
-          'id, name, unit, cost, purchase_quantity, purchase_unit, package_size, package_size_unit'
-        )
+  'id, name, unit, cost, cost_per_unit, purchase_quantity, purchase_unit, package_size, package_size_unit'
+)
         .order('name', { ascending: true })
 
       if (inventoryError) {
@@ -401,47 +402,65 @@ export default function RecipesPage() {
   }
 
   function getIngredientUsageCost(
-    inventoryItem: InventoryItem | undefined,
-    quantityUsed: string,
-    usageUnit?: string
-  ) {
-    if (!inventoryItem) return null
+  inventoryItem: InventoryItem | undefined,
+  quantityUsed: string,
+  usageUnit?: string
+) {
+  if (!inventoryItem) return null
 
-    const cost = Number(inventoryItem.cost)
-    const qtyUsed = Number(quantityUsed)
-    const recipeUnit = usageUnit || inventoryItem.unit || ''
+  const qtyUsed = Number(quantityUsed)
 
-    const usablePurchased = getUsablePurchasedQuantity(inventoryItem)
-
-    if (
-      !usablePurchased ||
-      Number.isNaN(cost) ||
-      Number.isNaN(qtyUsed) ||
-      usablePurchased.quantity <= 0
-    ) {
-      return null
-    }
-
-    if (!areUnitsCompatible(usablePurchased.unit, recipeUnit)) {
-      return null
-    }
-
-    const normalizedPurchaseQuantity = normalizeToBaseUnit(
-      usablePurchased.quantity,
-      usablePurchased.unit
-    )
-    const normalizedUsageQuantity = normalizeToBaseUnit(qtyUsed, recipeUnit)
-
-    if (
-      normalizedPurchaseQuantity === null ||
-      normalizedUsageQuantity === null ||
-      normalizedPurchaseQuantity <= 0
-    ) {
-      return null
-    }
-
-    return (cost / normalizedPurchaseQuantity) * normalizedUsageQuantity
+  if (Number.isNaN(qtyUsed)) {
+    return null
   }
+
+  // Prep batches use direct unit cost
+  if (
+    inventoryItem.cost_per_unit !== null &&
+    inventoryItem.cost_per_unit !== undefined &&
+    Number(inventoryItem.cost_per_unit) > 0
+  ) {
+    return qtyUsed * Number(inventoryItem.cost_per_unit)
+  }
+
+  // Existing inventory logic
+  const cost = Number(inventoryItem.cost)
+  const recipeUnit = usageUnit || inventoryItem.unit || ''
+
+  const usablePurchased = getUsablePurchasedQuantity(inventoryItem)
+
+  if (
+    !usablePurchased ||
+    Number.isNaN(cost) ||
+    usablePurchased.quantity <= 0
+  ) {
+    return null
+  }
+
+  if (!areUnitsCompatible(usablePurchased.unit, recipeUnit)) {
+    return null
+  }
+
+  const normalizedPurchaseQuantity = normalizeToBaseUnit(
+    usablePurchased.quantity,
+    usablePurchased.unit
+  )
+
+  const normalizedUsageQuantity = normalizeToBaseUnit(
+    qtyUsed,
+    recipeUnit
+  )
+
+  if (
+    normalizedPurchaseQuantity === null ||
+    normalizedUsageQuantity === null ||
+    normalizedPurchaseQuantity <= 0
+  ) {
+    return null
+  }
+
+  return (cost / normalizedPurchaseQuantity) * normalizedUsageQuantity
+}
 
   function getRecipeTotalCost(rows: IngredientRow[]) {
     return rows.reduce((sum, row) => {
