@@ -62,13 +62,13 @@ type StepRow = {
 }
 
 const recipeTypes = [
- 
+  { value: 'food', label: 'Menu Item' },
+  { value: 'drink', label: 'Drink' },
+  { value: 'dessert', label: 'Dessert' },
   { value: 'prep_batch', label: 'Prep Batch' },
   { value: 'event_prep_item', label: 'Event Prep Item' },
   { value: 'catering_tray', label: 'Catering Tray' },
-  { value: 'menu_item', label: 'Menu Item' },
 ]
-
 const recipeStatuses = ['Draft', 'Testing', 'Finalized']
 
 const categoryOptions = [
