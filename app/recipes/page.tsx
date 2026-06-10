@@ -66,7 +66,7 @@ const recipeTypes = [
   { value: 'prep_batch', label: 'Prep Batch' },
   { value: 'event_prep_item', label: 'Event Prep Item' },
   { value: 'catering_tray', label: 'Catering Tray' },
-  { value: 'menu)item', label: 'Menu Item' },
+  { value: 'menu_item', label: 'Menu Item' },
 ]
 
 const recipeStatuses = ['Draft', 'Testing', 'Finalized']
